@@ -1,8 +1,14 @@
 import cookieParser from "cookie-parser";
 import { router } from "../routes";
-
-export const expressConfig = (express, app) => {
+import cors from "cors";
+export const expressConfig = (app) => {
+  app.use(
+    cors({
+      origin: ["http://localhost:3000"],
+      optionsSuccessStatus: 200,
+      credentials: true,
+    })
+  );
   app.use(cookieParser());
-  app.use(express.json());
   app.use(router);
 };

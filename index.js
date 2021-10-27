@@ -3,7 +3,8 @@ import express from "express";
 import { connection } from "./config/db-script";
 import { expressConfig } from "./config/express";
 const app = express();
-expressConfig(express, app);
+app.use(express.json());
+expressConfig(app);
 
 app.get("/", (req, res) => {
   return res.send("rota /");
