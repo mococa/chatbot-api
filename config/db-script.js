@@ -4,10 +4,13 @@ const config = {
   useUnifiedTopology: true,
 };
 export const connection = () => {
-  mongoose.connect(process.env.MONGO_URI, config);
-  const connection = mongoose.connection;
+  return new Promise((res) => {
+    mongoose.connect(process.env.MONGO_URI, config);
+    const connection = mongoose.connection;
 
-  connection.once("open", () => {
-    console.log("Database connected");
+    connection.once("open", () => {
+      console.log("Database connected");
+      res(true);
+    });
   });
 };

@@ -5,6 +5,8 @@
     "plugins": [
         "@babel/plugin-proposal-optional-chaining",
         "@babel/transform-runtime"
-      
-    ]
+    ],
+    "ignore": [
+        "node_modules*"
+      ]
 }

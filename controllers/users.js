@@ -6,11 +6,18 @@ export class User {
   static async get({ username, password }) {
     return await UserModel.findOne({ username, password }, { password: 0 });
   }
-  static async create({ username, password }) {
+  static async create({ username, password, passwordConfirmation }) {
+    if (password !== passwordConfirmation) {
+      throw {
+        message:
+          "Senhas não coincidem. Por favor, verifique-as e tente novamente",
+      };
+    }
     const user = await UserModel.findOne({ username });
     if (user) {
       throw {
-        message: "Este nome de usuário já está em uso",
+        message:
+          "Este nome de usuário já está em uso. Por favor, escolha outro",
         status: 403,
       };
     }
@@ -27,7 +34,8 @@ export class User {
     const user = await this.get({ username, password });
     if (!user) {
       throw {
-        message: "Usuário ou senha incorretos.",
+        message:
+          "Usuário ou senha incorretos. Por favor, verifique os dados inseridos",
         status: 404,
       };
     }
