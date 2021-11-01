@@ -1,10 +1,11 @@
+import { configure_client } from "../config/whatsapp-events";
 import { BotModel } from "../models/bot";
-
 export class WhatsappBot {
   client = null;
   qr = null;
   ready = false;
   loggedIn = false;
+
   static getLoggedIn() {
     return this.loggedIn;
   }
@@ -15,6 +16,18 @@ export class WhatsappBot {
   static async getSession() {
     const bot = await BotModel.findOne({ "session.channel": "whatsapp" });
     return bot?.core?.session ? JSON.parse(bot?.core?.session) : null;
+  }
+  static getInfo() {
+    return this.client && this.client.info
+      ? {
+          number: this.client?.info?.me?.user,
+          name: this.client?.info?.pushname,
+          phone: {
+            name: this.client?.info?.phone?.device_manufacturer,
+            platform: this.client?.info?.platform,
+          },
+        }
+      : null;
   }
   static async storeSession(session) {
     const bot = await BotModel.findOne({ "core.channel": "whatsapp" });
@@ -33,10 +46,12 @@ export class WhatsappBot {
     });
     return createdBot;
   }
-  static removeSession() {
-    this.loggedIn = false;
-    this.ready = false;
-    return BotModel.deleteOne({ "core.channel": "whatsapp" });
+  static async removeSession() {
+    await BotModel.deleteOne({ "core.channel": "whatsapp" });
+    //this.client = await configure_client();
+    this.setLoggedIn(false);
+    this.setReady(false);
+    return this.client;
   }
   static setClient(client) {
     this.client = client;
@@ -57,6 +72,8 @@ export class WhatsappBot {
   }
   static setReady(ready) {
     this.ready = ready;
+    this.setQR(null);
+    this.setLoggedIn(true);
     return this.getReady();
   }
 }
