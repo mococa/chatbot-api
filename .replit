@@ -1,0 +1,2 @@
+run = "yarn replit"
+language = "nodejs"
