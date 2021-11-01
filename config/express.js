@@ -4,7 +4,7 @@ import cors from "cors";
 export const expressConfig = (app) => {
   app.use(
     cors({
-      origin: ["http://localhost:3000"],
+      origin: [process.env.FRONT_END],
       optionsSuccessStatus: 200,
       credentials: true,
     })
