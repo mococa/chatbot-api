@@ -12,8 +12,11 @@ route.get("/whatsapp", (req, res) => {
 });
 route.get("/whatsapp/turn-off", async (req, res) => {
   if (!WhatsappBot.getReady()) return res.json({ ok: true });
+
   WhatsappBot.removeSession().then(async () => {
     await WhatsappBot.getClient().logout();
+    await WhatsappBot.getClient().close();
+    await WhatsappBot.getClient().connect();
     res.json({ ok: true });
   });
 });

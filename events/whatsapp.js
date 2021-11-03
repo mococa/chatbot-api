@@ -6,12 +6,12 @@ export const whatsappEvents = (client) => {
     console.error("WhatsApp Bot: failed to authenticate");
     WhatsappBot.setQR(null);
     WhatsappBot.setReady(false);
-    WhatsappBot.setLoggedIn(false);
+   // WhatsappBot.setLoggedIn(false);
   });
   client.on("disconnected", async () => {
     console.info("WhatsApp Bot: disconnected");
     WhatsappBot.setQR(null);
-    WhatsappBot.setLoggedIn(false);
+    //WhatsappBot.setLoggedIn(false);
     WhatsappBot.setReady(false);
     WhatsappBot.removeSession().then(() => {
       client = configure_client();
@@ -21,7 +21,7 @@ export const whatsappEvents = (client) => {
     console.info("WhatsApp Bot: authorized");
     WhatsappBot.storeSession(JSON.stringify(session)).then(() => {
       WhatsappBot.setQR(null);
-      WhatsappBot.setLoggedIn(true);
+      //WhatsappBot.setLoggedIn(true);
       WhatsappBot.setReady(true);
     });
   });
@@ -34,7 +34,7 @@ export const whatsappEvents = (client) => {
   });
   client.on("ready", () => {
     console.info("WhatsApp Bot: ready");
-    WhatsappBot.setReady(true);
+    //WhatsappBot.setReady(true);
   });
   client.on("message", async (message) => {
     try {

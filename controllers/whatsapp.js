@@ -18,16 +18,16 @@ export class WhatsappBot {
     return bot?.core?.session ? JSON.parse(bot?.core?.session) : null;
   }
   static getInfo() {
-    return this.client && this.client.info
-      ? {
-          number: this.client?.info?.me?.user,
-          name: this.client?.info?.pushname,
-          phone: {
-            name: this.client?.info?.phone?.device_manufacturer,
-            platform: this.client?.info?.platform,
-          },
-        }
-      : null;
+    if ((!this.client && !this.client.user) || this.client?.state === "close")
+      return null;
+    console.log(this.client)
+    return {
+      number: this.client?.user?.jid?.split("@")[0],
+      name: this.client?.user?.name,
+      phone: {
+        name: this.client?.user?.phone?.device_manufacturer,
+      },
+    };
   }
   static async storeSession(session) {
     const bot = await BotModel.findOne({ "core.channel": "whatsapp" });
@@ -39,7 +39,7 @@ export class WhatsappBot {
     }
     console.info("WhatsApp Bot: Creating session");
     const whatsappChannelModel = {
-      session,
+      session: JSON.stringify(session),
     };
     const createdBot = await BotModel.create({
       core: whatsappChannelModel,
