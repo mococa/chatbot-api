@@ -2,7 +2,7 @@ import { ReconnectMode } from "@adiwajshing/baileys";
 import { WhatsappBot } from "../controllers/whatsapp";
 import QRCode from "qrcode";
 
-export const clientNew = (connection, session) => {
+export const handle_wpp_events = (connection, session) => {
   //connection.connectOptions.logQR = false;
   connection.connectOptions.connectCooldownMs = 10000;
   connection.connectOptions.maxIdleTimeMs = 10000;
@@ -12,6 +12,7 @@ export const clientNew = (connection, session) => {
   connection.logger.level = "error";
   connection.connectOptions.shouldLogMessages = false;
   connection.version = [2, 2140, 12];
+
   if (session) {
     connection.loadAuthInfo(session);
   }

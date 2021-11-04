@@ -21,10 +21,14 @@ export const getJWT = (jwt_token) => {
 };
 export const createToken = (user, res) => {
   const token = jwt.sign({ id: user._id }, process.env.JWT_SECRET, {
-    expiresIn: "15s",
+    expiresIn: "15min",
   });
   res.cookie("jwt", token, {
-    maxAge: 15 * 1000,
+    maxAge: 15 * 60 * 1000,
+    httpOnly: false,
+    secure: false,
+    domain: "luizfelipe87.repl.co",
+    sameSite: "none",
   });
   return token;
 };

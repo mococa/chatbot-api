@@ -1,4 +1,3 @@
-import { configure_client } from "../config/whatsapp-events";
 import { BotModel } from "../models/bot";
 export class WhatsappBot {
   client = null;

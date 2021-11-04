@@ -3,11 +3,9 @@ import { WAConnection } from "@adiwajshing/baileys";
 import express from "express";
 import { connection } from "./config/db-script";
 import { expressConfig } from "./config/express";
-import { configure_client } from "./config/whatsapp-events";
-import { clientNew } from "./events/wpp-events";
+import { handle_wpp_events } from "./events/wpp-events";
 import { WhatsappBot } from "./controllers/whatsapp";
 let client = null;
-let conn = null;
 
 const app = express();
 app.use(express.json());
@@ -22,9 +20,9 @@ app.listen(process.env.PORT || 8080, () => {
     const session = await WhatsappBot.getSession();
     try {
       console.info("WhatsApp Bot: warming up");
-      conn = new WAConnection();
-      clientNew(conn, session);
-      await conn.connect();
+      client = new WAConnection();
+      handle_wpp_events(client, session);
+      await client.connect();
     } catch (e) {
       console.error(e);
     }
