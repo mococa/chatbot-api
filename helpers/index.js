@@ -25,10 +25,14 @@ export const createToken = (user, res) => {
   });
   res.cookie("jwt", token, {
     maxAge: 15 * 60 * 1000,
-    httpOnly: false,
-    secure: false,
-    domain: "luizfelipe87.repl.co",
-    sameSite: "none",
+    ...(process.env.NODE_ENV === "production"
+      ? {
+          httpOnly: false,
+          secure: false,
+          domain: process.env.FRONT_END_DOMAIN,
+          sameSite: "none",
+        }
+      : {}),
   });
   return token;
 };

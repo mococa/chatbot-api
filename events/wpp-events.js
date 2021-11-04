@@ -3,7 +3,7 @@ import { WhatsappBot } from "../controllers/whatsapp";
 import QRCode from "qrcode";
 
 export const handle_wpp_events = (connection, session) => {
-  //connection.connectOptions.logQR = false;
+  connection.connectOptions.logQR = false;
   connection.connectOptions.connectCooldownMs = 10000;
   connection.connectOptions.maxIdleTimeMs = 10000;
   connection.connectOptions.maxRetries = 3;
@@ -33,11 +33,13 @@ export const handle_wpp_events = (connection, session) => {
     });
   });
   connection.on("close", (er) => {
-    console.log("disconnected", { er });
-    connection.connectOptions.connectCooldownMs = 1000;
-    setTimeout(() => {
-      connection.connectOptions.connectCooldownMs = 10000;
-    }, 1000);
+    WhatsappBot.removeSession().then(() => {
+      console.log("disconnected", { er });
+      connection.connectOptions.connectCooldownMs = 1000;
+      setTimeout(() => {
+        connection.connectOptions.connectCooldownMs = 10000;
+      }, 1000);
+    });
   });
   connection.on("chat-new", (chat) => {
     console.log({ chat });
