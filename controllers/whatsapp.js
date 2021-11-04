@@ -19,7 +19,6 @@ export class WhatsappBot {
   static getInfo() {
     if ((!this.client && !this.client.user) || this.client?.state === "close")
       return null;
-    console.log(this.client)
     return {
       number: this.client?.user?.jid?.split("@")[0],
       name: this.client?.user?.name,

@@ -28,7 +28,7 @@ export const createToken = (user, res) => {
     ...(process.env.NODE_ENV === "production"
       ? {
           httpOnly: false,
-          secure: false,
+          secure: true,
           domain: process.env.FRONT_END_DOMAIN,
           sameSite: "none",
         }
