@@ -16,15 +16,22 @@ app.get("/", (req, res) => {
 
 app.listen(process.env.PORT || 8080, () => {
   connection().then(async () => {
-    const session = await WhatsappBot.getSession();
     try {
       console.info("WhatsApp Bot: warming up");
-      const client = new WAConnection();
-      handle_wpp_events(client, session);
-      await client.connect();
+      await connectionLoop();
     } catch (e) {
       console.error(e);
     }
   });
+  async function connectionLoop() {
+    const session = await WhatsappBot.getSession();
+    const client = new WAConnection();
+    handle_wpp_events(client, session);
+    try {
+      client.connect().catch(connectionLoop);
+    } catch (err) {
+      client.connect().catch(connectionLoop);
+    }
+  }
   console.log("App started 🚀 at port " + process.env.PORT || 8080);
 });

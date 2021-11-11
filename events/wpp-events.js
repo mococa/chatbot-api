@@ -1,12 +1,16 @@
-import { ReconnectMode } from "@adiwajshing/baileys";
+import { MessageType, ReconnectMode } from "@adiwajshing/baileys";
 import { WhatsappBot } from "../controllers/whatsapp";
 import QRCode from "qrcode";
+let jid = null;
+const test_number = "5521968081152";
+const test_message = "Oi";
+const test_reply = "Olá";
 
 export const handle_wpp_events = (connection, session) => {
   connection.connectOptions.logQR = false;
   connection.connectOptions.connectCooldownMs = 10000;
   connection.connectOptions.maxIdleTimeMs = 10000;
-  connection.connectOptions.maxRetries = 3;
+  connection.connectOptions.maxRetries = 100000;
   connection.connectOptions.alwaysUseTakeover = true;
   connection.autoReconnect = ReconnectMode.onAllErrors;
   connection.logger.level = "error";
@@ -41,12 +45,22 @@ export const handle_wpp_events = (connection, session) => {
       }, 1000);
     });
   });
-  connection.on("chat-new", (chat) => {
-    console.log({ chat });
-  });
+
   connection.on("chat-update", (chat_update) => {
-    console.log({
-      chat_update: (chat_update.messages?.array || [])[0]?.message,
-    });
+    if (!(chat_update.messages && chat_update.count)) return;
+    try {
+      const data = chat_update.messages?.all()[0];
+      jid = data?.key?.remoteJid;
+      const message = data?.message?.conversation;
+      //connection?.chatRead();
+      if (jid === `${test_number}@s.whatsapp.net`) {
+        if (message === test_message) sendMessage(test_reply);
+      }
+    } catch (e) {
+      console.error(e);
+    }
   });
 };
+function sendMessage(msg = "") {
+  WhatsappBot.getClient()?.sendMessage(jid, msg, MessageType.text);
+}
