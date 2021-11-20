@@ -1,8 +1,12 @@
 import { Schema, model } from "mongoose";
-import { WhatsappChannel } from "./whatsapp-channel";
 
 const Bot = new Schema({
-  core: WhatsappChannel,
+  channel: {
+    type: String,
+    enum: ["whatsapp", "instagram"],
+    required: [true, "Bot channel is required"],
+  },
+  session: String,
 });
 
 export const BotModel = model("bots", Bot, "bots");

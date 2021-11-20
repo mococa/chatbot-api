@@ -1,5 +1,5 @@
 import { getJWT } from "../helpers";
-import { BlockModel } from "../models/block";
+//import { BlockModel } from "../models/block";
 import { UserModel } from "../models/user";
 
 export class User {
@@ -49,7 +49,7 @@ export class User {
       };
     }
     const user = await UserModel.findById(id, { password: 0 }).lean();
-    const blocks = await BlockModel.find({ user: user._id }, { user: 0 });
+    //const blocks = await BlockModel.find({ user: user._id }, { user: 0 });
     return { ...user, blocks };
   }
 }

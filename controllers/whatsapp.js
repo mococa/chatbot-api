@@ -13,8 +13,8 @@ export class WhatsappBot {
     return this.getLoggedIn();
   }
   static async getSession() {
-    const bot = await BotModel.findOne({ "session.channel": "whatsapp" });
-    return bot?.core?.session ? JSON.parse(bot?.core?.session) : null;
+    const bot = await BotModel.findOne({ channel: "whatsapp" });
+    return bot?.session ? JSON.parse(bot?.session) : null;
   }
   static getInfo() {
     if ((!this.client && !this.client.user) || this.client?.state === "close")
@@ -28,24 +28,23 @@ export class WhatsappBot {
     };
   }
   static async storeSession(session) {
-    const bot = await BotModel.findOne({ "core.channel": "whatsapp" });
+    const bot = await BotModel.findOne({ channel: "whatsapp" });
     if (bot && session) {
       console.info("WhatsApp Bot: returning to session");
-      bot.core.session = JSON.stringify(session);
+      bot.session = JSON.stringify(session);
       await bot.save();
       return bot;
     }
     console.info("WhatsApp Bot: Creating session");
-    const whatsappChannelModel = {
+    const channelModel = {
       session: JSON.stringify(session),
+      channel: "whatsapp",
     };
-    const createdBot = await BotModel.create({
-      core: whatsappChannelModel,
-    });
+    const createdBot = await BotModel.create(channelModel);
     return createdBot;
   }
   static async removeSession() {
-    await BotModel.deleteOne({ "core.channel": "whatsapp" });
+    await BotModel.deleteOne({ channel: "whatsapp" });
     //this.client = await configure_client();
     this.setLoggedIn(false);
     this.setReady(false);

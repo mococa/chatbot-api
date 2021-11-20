@@ -1,5 +1,5 @@
 import { ObjectId } from "bson";
-import { BlockModel } from "../models/block";
+import { BlockModel } from "../models/forms";
 
 export class Block {
   static async get(user_id) {

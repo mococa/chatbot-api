@@ -2,7 +2,7 @@ import { MessageType, ReconnectMode } from "@adiwajshing/baileys";
 import { WhatsappBot } from "../controllers/whatsapp";
 import QRCode from "qrcode";
 let jid = null;
-const test_number = "5521968081152";
+const test_number = "554198712624";
 const test_message = "Oi";
 const test_reply = "Olá";
 
@@ -52,15 +52,17 @@ export const handle_wpp_events = (connection, session) => {
       const data = chat_update.messages?.all()[0];
       jid = data?.key?.remoteJid;
       const message = data?.message?.conversation;
+      if (message === "!ping") reply("pong!");
+      //console.log({ message, jid });
       //connection?.chatRead();
       if (jid === `${test_number}@s.whatsapp.net`) {
-        if (message === test_message) sendMessage(test_reply);
+        if (message === test_message) reply(test_reply);
       }
     } catch (e) {
       console.error(e);
     }
   });
 };
-function sendMessage(msg = "") {
+function reply(msg = "") {
   WhatsappBot.getClient()?.sendMessage(jid, msg, MessageType.text);
 }
