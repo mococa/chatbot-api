@@ -21,10 +21,10 @@ export const getJWT = (jwt_token) => {
 };
 export const createToken = (user, res) => {
   const token = jwt.sign({ id: user._id }, process.env.JWT_SECRET, {
-    expiresIn: "15min",
+    expiresIn: "60min",
   });
   res.cookie("jwt", token, {
-    maxAge: 15 * 60 * 1000,
+    maxAge: 60 * 60 * 1000,
     ...(process.env.NODE_ENV === "production"
       ? {
           httpOnly: false,

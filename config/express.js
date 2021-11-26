@@ -4,9 +4,17 @@ import cors from "cors";
 export const expressConfig = (app) => {
   app.use(
     cors({
-      origin: [process.env.FRONT_END],
-      optionsSuccessStatus: 200,
+      origin: (domain, callback) => {
+        if (domain && domain !== process.env.FRONT_END) {
+          console.error({ blockedDomain: domain });
+          return callback(
+            "Por favor, requisições HTTP devem ser feitas pelo site"
+          );
+        }
+        callback(null, true);
+      },
       credentials: true,
+      sameSite: "none",
     })
   );
   app.use(cookieParser());
