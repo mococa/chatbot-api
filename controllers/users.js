@@ -1,10 +1,14 @@
 import { getJWT } from "../helpers";
 //import { BlockModel } from "../models/block";
 import { UserModel } from "../models/user";
+import { Question } from "./question";
 
 export class User {
   static async get({ username, password }) {
-    return await UserModel.findOne({ username, password }, { password: 0 });
+    return await UserModel.findOne(
+      { username, password },
+      { password: 0 }
+    ).lean();
   }
   static async create({ username, password, passwordConfirmation }) {
     if (password !== passwordConfirmation) {
@@ -39,7 +43,8 @@ export class User {
         status: 404,
       };
     }
-    return user;
+    const questions = await Question.get();
+    return { ...user, questions };
   }
   static async getByToken(token) {
     const { id } = await getJWT(token);
@@ -49,7 +54,7 @@ export class User {
       };
     }
     const user = await UserModel.findById(id, { password: 0 }).lean();
-    //const blocks = await BlockModel.find({ user: user._id }, { user: 0 });
-    return { ...user, blocks };
+    const questions = await Question.get();
+    return { ...user, questions };
   }
 }

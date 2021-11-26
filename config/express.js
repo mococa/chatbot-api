@@ -5,11 +5,13 @@ export const expressConfig = (app) => {
   app.use(
     cors({
       origin: (domain, callback) => {
-        if (domain && domain !== process.env.FRONT_END) {
-          console.error({ blockedDomain: domain });
-          return callback(
-            "Por favor, requisições HTTP devem ser feitas pelo site"
-          );
+        if (process.env.NODE_ENV === "production") {
+          if (domain && domain !== process.env.FRONT_END) {
+            console.error({ blockedDomain: domain });
+            return callback(
+              "Por favor, requisições HTTP devem ser feitas pelo site"
+            );
+          }
         }
         callback(null, true);
       },
