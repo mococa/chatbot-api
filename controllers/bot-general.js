@@ -16,15 +16,17 @@ export class Chatbot {
       (session) => session.customer !== customer
     );
   }
-  static onSessionEnd(customer, callback) {
-    const session = this.findSession(customer);
+  static onSessionEnd(session, callback) {
     const self = this;
-    if (session && session.active) {
-      session.onCompleted = () => {
-        callback(session);
-        self.deleteSession(customer);
-      };
-    }
+    //if (session) {
+    // session.onCompleted = function () {
+    //if (session.active) {
+    session.active = false;
+    callback(session);
+    self.deleteSession(customer);
+    //}
+    //};
+    //}
   }
   static createSession({ customer, questions = [] }) {
     if (!this.sessions) this.sessions = [];
@@ -56,7 +58,7 @@ export class Chatbot {
     if (session.questionIndex === undefined) session.questionIndex = 0;
     return session.questions[session.questionIndex || 0] || null;
   }
-  static answerQuestion({ message, customer }) {
+  static answerQuestion({ message, customer }, callback) {
     const session = this.findSession(customer);
     if (!session)
       throw {
@@ -114,8 +116,8 @@ export class Chatbot {
     const nextQuestion = this.getQuestion({ session });
     if (nextQuestion) this.askQuestion({ customer });
     else {
-      session.onCompleted();
       session.active = false;
+      callback(session);
       return;
     }
   }

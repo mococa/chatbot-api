@@ -74,8 +74,7 @@ export const handle_wpp_events = (connection, session) => {
       const session = Chatbot.findSession(customer);
       if (client) {
         if (session) {
-          Chatbot.answerQuestion({ message, customer });
-          Chatbot.onSessionEnd(customer, async (session) => {
+          Chatbot.answerQuestion({ message, customer }, async (session) => {
             console.log(session.questions);
             FormModel.create({
               questions: session.questions.map((question) =>
@@ -99,8 +98,7 @@ export const handle_wpp_events = (connection, session) => {
         }
       } else {
         if (session) {
-          Chatbot.answerQuestion({ message, customer });
-          Chatbot.onSessionEnd(customer, async (session) => {
+          Chatbot.answerQuestion({ message, customer }, async (session) => {
             const imgUrl = await connection
               .getProfilePicture(jid)
               .catch(() => null);
