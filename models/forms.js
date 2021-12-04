@@ -21,4 +21,4 @@ const Form = new Schema(
   }
 );
 
-export const BlockModel = model("forms", Form, "forms");
+export const FormModel = model("forms", Form, "forms");

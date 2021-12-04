@@ -15,14 +15,13 @@ route.post("/", check_authentication, async (req, res) => {
     const blocks = await Question.create(req.body, req.user_id);
     return res.json(blocks);
   } catch (err) {
-    console.error(err);
     return errorHandler(err, res);
   }
 });
 route.put("/", check_authentication, async (req, res) => {
   try {
     const questions = await Question.reorder(req.body);
-    return res.json(question);
+    return res.json(questions);
   } catch (err) {
     return errorHandler(err, res);
   }

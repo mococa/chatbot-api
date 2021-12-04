@@ -2,10 +2,14 @@ import jwt from "jsonwebtoken";
 
 export const errorHandler = (error, res) => {
   if (error.errors) {
+    console.error(
+      "error: " + Object.values(error.errors)[0].properties.message
+    );
     return res
       .status(500)
       .json({ message: Object.values(error.errors)[0].properties.message });
   }
+  console.error("error: " + error.message);
   return res.status(error.status || 500).json({ message: error.message });
 };
 export const getJWT = (jwt_token) => {
@@ -35,4 +39,19 @@ export const createToken = (user, res) => {
       : {}),
   });
   return token;
+};
+export const sleep = (delay) => {
+  return new Promise((res, rej) => setTimeout(res, delay));
+};
+export const jidToPhone = (jid) => {
+  return jid.slice(0, 13);
+};
+export const phoneToJid = (phone) => {
+  const _phone = `55${phone
+    .split("-")
+    .join("")
+    .split(" ")
+    .join("")
+    .replace(/\(|\)/g, ".")}@s.whatsapp.net`;
+  return _phone.length === 13 ? _phone : _phone.slice(2);
 };

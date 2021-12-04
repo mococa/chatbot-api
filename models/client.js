@@ -9,6 +9,7 @@ const Client = new Schema(
     picture: {
       type: String,
     },
+    age: { type: String },
     phone: {
       type: String,
       required: [true, "Número de telefone é um campo obrigatório"],

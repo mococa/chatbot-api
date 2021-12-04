@@ -1,6 +1,7 @@
 import { getJWT } from "../helpers";
 //import { BlockModel } from "../models/block";
 import { UserModel } from "../models/user";
+import { Client } from "./client";
 import { Question } from "./question";
 
 export class User {
@@ -10,11 +11,18 @@ export class User {
       { password: 0 }
     ).lean();
   }
-  static async create({ username, password, passwordConfirmation }) {
+  static async create({ username, password, passwordConfirmation, code = "" }) {
     if (password !== passwordConfirmation) {
       throw {
         message:
           "Senhas não coincidem. Por favor, verifique-as e tente novamente",
+      };
+    }
+    console.log({ code });
+    if (code.toLowerCase() !== "gemabot101") {
+      throw {
+        message: "Código da empresa incorreto",
+        status: 401,
       };
     }
     const user = await UserModel.findOne({ username });
@@ -44,17 +52,19 @@ export class User {
       };
     }
     const questions = await Question.get();
-    return { ...user, questions };
+    const clients = await Client.get();
+    return { ...user, questions, clients };
   }
   static async getByToken(token) {
     const { id } = await getJWT(token);
     if (!id) {
       throw {
-        message: "Por favor, realize logon novamente.",
+        message: "Por favor, realize login novamente.",
       };
     }
     const user = await UserModel.findById(id, { password: 0 }).lean();
     const questions = await Question.get();
-    return { ...user, questions };
+    const clients = await Client.get();
+    return { ...user, questions, clients };
   }
 }
