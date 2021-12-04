@@ -20,7 +20,7 @@ route.get("/:id", async (req, res) => {
 route.get("/:id/chat", async (req, res) => {
   const { id } = req.params;
   const bot = WhatsappBot.getClient();
-  if (bot && bot.isConnected) {
+  if (WhatsappBot.getReady() && WhatsappBot.getLoggedIn()) {
     const client = await Client.get(id);
     const jid = phoneToJid(client.phone);
     const chat = await bot.loadMessages(jid, 20);
@@ -31,7 +31,7 @@ route.get("/:id/chat", async (req, res) => {
 route.post("/:id/chat", async (req, res) => {
   const { id } = req.params;
   const bot = WhatsappBot.getClient();
-  if (bot && bot.isConnected) {
+  if (WhatsappBot.getReady() && WhatsappBot.getLoggedIn()) {
     const client = await Client.get(id);
     const jid = phoneToJid(client.phone);
     const message = req.body.message;
