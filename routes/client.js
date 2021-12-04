@@ -2,7 +2,6 @@ import { Router } from "express";
 import { Client } from "../controllers/client";
 import { WhatsappBot } from "../controllers/whatsapp";
 import { phoneToJid } from "../helpers";
-import { ClientModel } from "../models/client";
 
 export const client_route = Router();
 const route = client_route;

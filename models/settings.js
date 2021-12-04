@@ -3,11 +3,14 @@ import { Schema, model } from "mongoose";
 const Settings = new Schema(
   {
     questionsOrder: {
-      type: Array,
+      type: [String],
     },
     welcome: {
-      type: Array,
-      validate: [(v) => v === 2, "Deve-se haver 2 perguntas de boas vindas, nesta ordem: Nome e Email"],
+      type: [String],
+      validate: [
+        (v) => v.length === 2 && v.every((field) => typeof field === "string"),
+        "Deve-se haver 2 perguntas de boas vindas, nesta ordem: Nome e Email",
+      ],
     },
   },
   {

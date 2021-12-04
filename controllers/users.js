@@ -1,8 +1,8 @@
 import { getJWT } from "../helpers";
-//import { BlockModel } from "../models/block";
 import { UserModel } from "../models/user";
 import { Client } from "./client";
 import { Question } from "./question";
+import { SettingsModel } from "../models/settings";
 
 export class User {
   static async get({ username, password }) {
@@ -53,7 +53,8 @@ export class User {
     }
     const questions = await Question.get();
     const clients = await Client.get();
-    return { ...user, questions, clients };
+    const settings = await SettingsModel.findOne({}).lean();
+    return { ...user, questions, clients, settings };
   }
   static async getByToken(token) {
     const { id } = await getJWT(token);
@@ -65,6 +66,7 @@ export class User {
     const user = await UserModel.findById(id, { password: 0 }).lean();
     const questions = await Question.get();
     const clients = await Client.get();
-    return { ...user, questions, clients };
+    const settings = await SettingsModel.findOne({}).lean();
+    return { ...user, questions, clients, settings };
   }
 }
