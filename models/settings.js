@@ -12,6 +12,10 @@ const Settings = new Schema(
         "Deve-se haver 2 perguntas de boas vindas, nesta ordem: Nome e Email",
       ],
     },
+    askQuestions: {
+      type: Boolean,
+      default: false,
+    },
   },
   {
     versionKey: false,

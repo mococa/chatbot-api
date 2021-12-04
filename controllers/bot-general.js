@@ -1,9 +1,9 @@
 import { MessageType } from "@adiwajshing/baileys";
+import { capitalize } from "../helpers";
 import { WhatsappBot } from "./whatsapp";
 
 export class Chatbot {
   sessions = [];
-  answers = [];
 
   static findSession(customer) {
     if (!this.sessions) this.sessions = [];
@@ -26,13 +26,13 @@ export class Chatbot {
       };
     }
   }
-  static createSession({ customer, allQuestions = [] }) {
+  static createSession({ customer, questions = [] }) {
     if (!this.sessions) this.sessions = [];
     this.sessions = [
       ...this.sessions.filter((session) => session.customer !== customer),
       {
         customer,
-        allQuestions,
+        questions,
         active: true,
         createdAt: new Date(),
         updatedAt: new Date(),
@@ -45,9 +45,16 @@ export class Chatbot {
       throw {
         message: "Sessão não encontrada",
       };
-    if (session.question || 0 <= (session.allQuestions || []).length) {
-      this.reply(customer, session.allQuestions[session.question || 0]);
+    if (session.questionIndex || 0 <= (session.questions || []).length) {
+      this.reply(
+        customer,
+        session.questions[session.questionIndex || 0]?.question
+      );
     }
+  }
+  static getQuestion({ session }) {
+    if (session.questionIndex === undefined) session.questionIndex = 0;
+    return session.questions[session.questionIndex || 0] || null;
   }
   static answerQuestion({ message, customer }) {
     const session = this.findSession(customer);
@@ -55,58 +62,63 @@ export class Chatbot {
       throw {
         message: "Sessão não encontrada",
       };
-    session.message = [...(session.message || []), message];
-    session.question =
-      session.question === undefined ? 0 : session.question + 1 || 0;
+    const question = this.getQuestion({ session });
+    let pattern;
+    switch (question.type) {
+      case "e-mail":
+        pattern = /^\w+([\.-]?\w+)*@\w+([\.-]?\w+)*(\.\w{2,3})+$/;
+        if (!pattern.test(message))
+          return this.reply(
+            customer,
+            "Por favor, digite um endereço de e-mail válido"
+          );
+        break;
+      case "unique":
+        if (
+          !question.options
+            .map((option) => option.toLowerCase())
+            .includes(message.toLowerCase())
+        ) {
+          return this.reply(
+            customer,
+            "Por favor, selecione uma das opções:\n" +
+              question.options.map(capitalize).join("\n")
+          );
+        }
+        break;
+      case "number":
+        pattern = /\d+/g;
+        const match = message.match(pattern);
+        if (!match) return this.reply(customer, "Por favor, indique um número");
+        message = match.join("");
+        break;
+      case "phone":
+        pattern =
+          /^(?:(?:\+|00)?(55)\s?)?(?:\(?([1-9][0-9])\)?\s?)?(?:((?:9\d|[2-9])\d{3})\-?(\d{4}))$/;
+        if (!pattern.test(message))
+          return this.reply(
+            customer,
+            "Por favor, digite um número de telefone válido"
+          );
+        break;
+      default:
+        break;
+    }
+
+    session.answers = [...(session.answers || []), message];
     session.updatedAt = new Date();
-    if (session.question <= session.allQuestions.length) {
-      if (session.allQuestions[session.question + 1]) {
-        this.reply(customer, session.allQuestions[session.question + 1]);
-      } else {
-        session.onCompleted();
-        session.active = false;
-      }
+    session.questionIndex += 1;
+    const nextQuestion = this.getQuestion({ session });
+    if (nextQuestion) this.askQuestion({ customer });
+    else {
+      session.onCompleted();
+      session.active = false;
+      return console.log({ session });
     }
   }
   static clear() {
     this.sessions = [];
   }
-
-  // static async ask(questions = [], data = {}) {
-  //   const message = data?.message?.conversation;
-  //   const author = data?.key?.remoteJid;
-  //   // oi -> Oi
-  //   this.reply(author, questions[0]);
-
-  //   if (!this.answers) this.answers = [];
-
-  //   let questionIndex = this.answers.filter(
-  //     (answer) => answer.author === author
-  //   ).length;
-
-  //   if (questions.length === questionIndex) {
-  //     return this.reply(author, "já acabou já mano para!!!!");
-  //   }
-
-  //   if (questionIndex <= questions.length) {
-  //     this.reply(author, questions[questionIndex]);
-  //   }
-
-  //   this.answers.push({ message, author, when: new Date() });
-
-  //   const author_answers = this.answers.filter(
-  //     (answer) => answer.author === author
-  //   );
-
-  //   if (author_answers.length >= questions.length) {
-  //     this.reply(
-  //       author,
-  //       `Suas respostas foram: ${author_answers
-  //         .map((answer) => answer.message)
-  //         .join(", ")}`
-  //     );
-  //   }
-  // }
 
   static reply(to, msg) {
     WhatsappBot.getClient()?.sendMessage(to, msg, MessageType.text);

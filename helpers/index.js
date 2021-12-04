@@ -44,7 +44,7 @@ export const sleep = (delay) => {
   return new Promise((res, rej) => setTimeout(res, delay));
 };
 export const jidToPhone = (jid) => {
-  return jid.slice(0, 13);
+  return jid.match(/\d+/g).join("");
 };
 export const phoneToJid = (phone) => {
   const _phone = `55${phone
@@ -54,4 +54,7 @@ export const phoneToJid = (phone) => {
     .join("")
     .replace(/\(|\)/g, ".")}@s.whatsapp.net`;
   return _phone.length === 13 ? _phone : _phone.slice(2);
+};
+export const capitalize = (word) => {
+  return word.slice(0, 1).toUpperCase() + word.slice(1).toLowerCase();
 };

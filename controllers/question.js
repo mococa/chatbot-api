@@ -21,9 +21,15 @@ export class Question {
     return questions;
   }
   static async create(
-    { title, question, color, type, keywords = [] },
+    { title, question, color, type, keywords = [], options = [] },
     user_id
   ) {
+    console.log({ options });
+    if (type === "unique" && !options.length) {
+      throw {
+        message: "Por favor, informe as opções da pergunta",
+      };
+    }
     await QuestionModel.create({
       title,
       question,
@@ -31,14 +37,29 @@ export class Question {
       color,
       keywords,
       createdBy: user_id,
+      ...(type === "unique" && { options }),
     });
     return this.get();
   }
-  static async edit({ title, color, question, answer, keywords = [], id }) {
+  static async edit({
+    title,
+    color,
+    question,
+    answer,
+    keywords = [],
+    id,
+    type,
+    options = [],
+  }) {
     if (!id) {
       throw {
         message: "ID da pergunta não identificado",
         status: 400,
+      };
+    }
+    if (type === "unique" && !options.length) {
+      throw {
+        message: "Por favor, informe as opções da pergunta",
       };
     }
     const block = await QuestionModel.findById(id);
@@ -53,6 +74,9 @@ export class Question {
     block.question = question;
     block.answer = answer;
     block.keywords = keywords;
+    block.type = type;
+    if (type === "unique") block.options = options;
+    if (block.type !== "unique") delete block.options;
 
     await block.save();
     return this.get();

@@ -25,8 +25,11 @@ const Question = new Schema(
     keywords: { type: [String], default: [] },
     type: {
       type: String,
-      enum: [],
+      enum: ["phone", "unique", "e-mail", "number", "free"],
       required: [true, "Por favor, selecione um tipo para esta pergunta"],
+    },
+    options: {
+      type: [String],
     },
     createdBy: {
       type: Schema.Types.ObjectId,

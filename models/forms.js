@@ -18,6 +18,7 @@ const Form = new Schema(
   },
   {
     versionKey: false,
+    timestamps: true,
   }
 );
 

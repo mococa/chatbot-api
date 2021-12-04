@@ -6,10 +6,16 @@ import { jidToPhone, phoneToJid, sleep } from "../helpers";
 import { Client } from "../controllers/client";
 import { ClientModel } from "../models/client";
 import { SettingsModel } from "../models/settings";
+import { Question } from "../controllers/question";
+import { FormModel } from "../models/forms";
+import { ObjectId } from "bson";
 let jid = null;
-const test_numbers = ["21982869775", "21993593730"];
-// const test_message = "Oi";
-// const test_reply = "Olá";
+const test_numbers = [
+  "21982869775",
+  "21993593730",
+  "21979262249",
+  "4198712624",
+];
 
 export const handle_wpp_events = (connection, session) => {
   connection.connectOptions.logQR = false;
@@ -20,7 +26,7 @@ export const handle_wpp_events = (connection, session) => {
   connection.autoReconnect = ReconnectMode.onAllErrors;
   connection.logger.level = "error";
   connection.connectOptions.shouldLogMessages = false;
-  connection.version = [2, 2140, 12];
+  //connection.version = [2, 2140, 12];
 
   if (session) {
     connection.loadAuthInfo(session);
@@ -58,9 +64,12 @@ export const handle_wpp_events = (connection, session) => {
       const data = chat_update.messages?.all()[0];
       jid = data?.key?.remoteJid;
       const message = data?.message?.conversation;
+      console.log("hey");
+      console.log({ jid });
       if (!test_numbers.some((test_number) => jid.includes(test_number))) {
         return;
       }
+      console.log("alo");
       //if (jid === phoneToJid(test_number)) {
       const customer = jid;
       const client = await Client.findByPhone(jidToPhone(jid));
@@ -69,27 +78,36 @@ export const handle_wpp_events = (connection, session) => {
         if (session) {
           Chatbot.answerQuestion({ message, customer });
           Chatbot.onSessionEnd(customer, async (session) => {
-            console.log({ session });
-            reply(JSON.stringify(session));
+            FormModel.create({
+              questions: session.questions.map((question) => question.question),
+              answers: session.answers,
+              client: client._id,
+            });
           });
         } else {
-          const questions = ["Pergunta 1:", "Pergunta 2"];
-          Chatbot.createSession({
-            customer,
-            allQuestions: questions,
-          });
-          const new_session = Chatbot.findSession(customer);
-          reply(new_session.allQuestions[0]);
+          const settings = await SettingsModel.findOne({});
+          if (settings.askQuestions) {
+            const questions = await Question.get();
+            Chatbot.createSession({
+              customer,
+              questions,
+            });
+            const new_session = Chatbot.findSession(customer);
+            reply(new_session.questions[0].question);
+          }
         }
       } else {
         if (session) {
           Chatbot.answerQuestion({ message, customer });
           Chatbot.onSessionEnd(customer, async (session) => {
-            const imgUrl = await connection.getProfilePicture(jid);
+            const imgUrl = await connection
+              .getProfilePicture(jid)
+              .catch(() => null);
+            reply(`Vi que vc tem ${session.answers[2]} anos`);
             await ClientModel.create({
-              name: session.message[0],
-              email: session.message[1],
-              picture: imgUrl,
+              name: session.answers[0],
+              email: session.answers[1],
+              picture: imgUrl || "",
               phone: jidToPhone(jid),
               channels: ["whatsapp"],
             });
@@ -98,57 +116,20 @@ export const handle_wpp_events = (connection, session) => {
         } else {
           const settings = await SettingsModel.findOne({});
           const welcome = (settings.welcome?.length && settings.welcome) || [
-            "Digite seu nome:",
-            "Digite seu e-mail",
+            { question: "Digite seu nome:", type: "free" },
+            { question: "Digite seu e-mail", type: "e-mail" },
           ];
           Chatbot.createSession({
             customer,
-            allQuestions: welcome,
+            questions: [
+              { question: welcome[0], type: "free" },
+              { question: welcome[1], type: "e-mail" },
+            ],
           });
           const new_session = Chatbot.findSession(customer);
-          reply(new_session.allQuestions[0]);
+          reply(new_session.questions[0].question);
         }
       }
-      // if (session && !client) {
-      //   Chatbot.answerQuestion({ message, customer });
-      //   Chatbot.onSessionEnd(customer, async (session) => {
-      //     const imgUrl = await connection.getProfilePicture(jid);
-      //     await ClientModel.create({
-      //       name: session.message[0],
-      //       age: session.message[1],
-      //       email: session.message[2],
-      //       picture: imgUrl,
-      //       phone: jidToPhone(jid),
-      //       channels: ["whatsapp"],
-      //     });
-      //     reply("Seu usuário foi criado com sucesso");
-      //   });
-      // } else {
-      //   let questions = [
-      //     "Bem vindo ao BOT da familia tradicional brasileira... Para começar, preciso que você indique o seu nome. to esperando, vai...",
-      //     "Uui!, que nome bonitinho... rsrsrsrsr... agora sua idade........",
-      //     "entendi! agora me diz seu email aí porra!",
-      //   ];
-      //   if (client)
-      //     questions = [
-      //       `Oi, ${client.name}, esse é vc?? ${imgUrl}`,
-      //       `Tudo bem? Eu sei que vc tem ${client.age} anos`,
-      //       `E aí, blz, ${client.email} ?`,
-      //     ];
-      //   if (!session)
-      //     Chatbot.createSession({
-      //       customer,
-      //       allQuestions: questions,
-      //     });
-      //   const new_session = Chatbot.findSession(customer);
-      //   reply(new_session.allQuestions[0]);
-      // }
-      //}
-      //console.log({ message, jid });
-      //connection?.chatRead();
-      // if (jid === `${test_number}@s.whatsapp.net`) {
-      //   if (message === test_message) reply(test_reply);
-      // }
     } catch (error) {
       console.error({ error });
     }

@@ -1,8 +1,4 @@
 import { Router } from "express";
-import { Client } from "../controllers/client";
-import { WhatsappBot } from "../controllers/whatsapp";
-import { phoneToJid } from "../helpers";
-import { ClientModel } from "../models/client";
 import { SettingsModel } from "../models/settings";
 
 export const settings_route = Router();
@@ -15,7 +11,15 @@ route.put("/welcome", async (req, res) => {
       .json({ message: "Por favor, preencha todos os campos necessários" });
   await SettingsModel.findOneAndUpdate(
     {},
-    { welcome: req.body.welcome?.welcome }
+    { $set: { welcome: req.body.welcome?.welcome } }
+  );
+  const settings = await SettingsModel.findOne({}).lean();
+  return res.json(settings);
+});
+route.put("/ask-questions", async (req, res) => {
+  await SettingsModel.findOneAndUpdate(
+    {},
+    { $set: { askQuestions: req.body.askQuestions } }
   );
   const settings = await SettingsModel.findOne({}).lean();
   return res.json(settings);
