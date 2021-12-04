@@ -18,7 +18,7 @@ export class User {
           "Senhas não coincidem. Por favor, verifique-as e tente novamente",
       };
     }
-    console.log({ code });
+
     if (code.toLowerCase() !== "gemabot101") {
       throw {
         message: "Código da empresa incorreto",
