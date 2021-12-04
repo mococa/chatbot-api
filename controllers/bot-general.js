@@ -82,7 +82,10 @@ export class Chatbot {
           return this.reply(
             customer,
             "Por favor, selecione uma das opções:\n" +
-              question.options.map(capitalize).join("\n")
+              question.options
+                .map(capitalize)
+                .map((opt) => "  ● " + opt)
+                .join("\n")
           );
         }
         break;
@@ -113,7 +116,7 @@ export class Chatbot {
     else {
       session.onCompleted();
       session.active = false;
-      return console.log({ session });
+      return;
     }
   }
   static clear() {

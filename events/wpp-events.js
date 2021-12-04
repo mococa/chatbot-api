@@ -64,13 +64,11 @@ export const handle_wpp_events = (connection, session) => {
       const data = chat_update.messages?.all()[0];
       jid = data?.key?.remoteJid;
       const message = data?.message?.conversation;
-      console.log("hey");
-      console.log({ jid });
+
       if (!test_numbers.some((test_number) => jid.includes(test_number))) {
         return;
       }
-      console.log("alo");
-      //if (jid === phoneToJid(test_number)) {
+
       const customer = jid;
       const client = await Client.findByPhone(jidToPhone(jid));
       const session = Chatbot.findSession(customer);
@@ -78,8 +76,11 @@ export const handle_wpp_events = (connection, session) => {
         if (session) {
           Chatbot.answerQuestion({ message, customer });
           Chatbot.onSessionEnd(customer, async (session) => {
+            console.log(session.questions);
             FormModel.create({
-              questions: session.questions.map((question) => question.question),
+              questions: session.questions.map((question) =>
+                String(question.question)
+              ),
               answers: session.answers,
               client: client._id,
             });
