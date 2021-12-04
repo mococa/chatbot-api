@@ -75,7 +75,6 @@ export const handle_wpp_events = (connection, session) => {
       if (client) {
         if (session) {
           Chatbot.answerQuestion({ message, customer }, async (session) => {
-            console.log(session.questions);
             FormModel.create({
               questions: session.questions.map((question) =>
                 String(question.question)
@@ -102,7 +101,6 @@ export const handle_wpp_events = (connection, session) => {
             const imgUrl = await connection
               .getProfilePicture(jid)
               .catch(() => null);
-            reply(`Vi que vc tem ${session.answers[2]} anos`);
             await ClientModel.create({
               name: session.answers[0],
               email: session.answers[1],

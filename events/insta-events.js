@@ -2,7 +2,6 @@ import { Instagram } from "../controllers/instagram";
 
 export const handle_ig_events = (client) => {
   client.on("pendingRequest", async (chat) => {
-    console.log({ chat });
     await chat.approve();
     chat.sendMessage({ content: "iai" });
   });
@@ -18,7 +17,7 @@ export const handle_ig_events = (client) => {
     });
   });
   client.on("newFollower", (user) => {
-    console.log({ user });
+
   });
   client.on("messageCreate", (message) => {
     if (message.content === "!ping") message.reply("pong!");

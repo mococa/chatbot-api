@@ -24,7 +24,6 @@ export class Question {
     { title, question, color, type, keywords = [], options = [] },
     user_id
   ) {
-    console.log({ options });
     if (type === "unique" && !options.length) {
       throw {
         message: "Por favor, informe as opções da pergunta",
