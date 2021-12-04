@@ -78,6 +78,8 @@ export const handle_wpp_events = (connection, session) => {
             customer,
             allQuestions: questions,
           });
+          const new_session = Chatbot.findSession(customer);
+          reply(new_session.allQuestions[0]);
         }
       } else {
         if (session) {
