@@ -4,9 +4,8 @@ const Form = new Schema(
   {
     questions: [
       {
-        type: Schema.Types.ObjectId,
+        type: String,
         required: [true, "Pergunta não identificada."],
-        ref: "questions",
       },
     ],
     answers: [{ type: String, required: true }],

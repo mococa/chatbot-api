@@ -114,12 +114,11 @@ export class Chatbot {
     session.updatedAt = new Date();
     session.questionIndex += 1;
     const nextQuestion = this.getQuestion({ session });
-    if (nextQuestion) this.askQuestion({ customer });
-    else {
-      session.active = false;
-      callback(session);
-      return;
-    }
+    if (nextQuestion) return this.askQuestion({ customer });
+
+    callback(session);
+    session.active = false;
+
   }
   static clear() {
     this.sessions = [];

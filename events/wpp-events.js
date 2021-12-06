@@ -72,16 +72,21 @@ export const handle_wpp_events = (connection, session) => {
       const customer = jid;
       const client = await Client.findByPhone(jidToPhone(jid));
       const session = Chatbot.findSession(customer);
-      if (client) {
+      if (client && !client.answered) {
         if (session) {
           Chatbot.answerQuestion({ message, customer }, async (session) => {
-            FormModel.create({
+            await FormModel.create({
               questions: session.questions.map((question) =>
                 String(question.question)
               ),
               answers: session.answers,
               client: client._id,
             });
+            const settings = await SettingsModel.findOne({});
+            const final_message =
+              settings.finalMessage ||
+              "Obrigado. Entraremos em contato o mais breve possível";
+            reply();
           });
         } else {
           const settings = await SettingsModel.findOne({});
@@ -96,6 +101,7 @@ export const handle_wpp_events = (connection, session) => {
           }
         }
       } else {
+        if (client) return;
         if (session) {
           Chatbot.answerQuestion({ message, customer }, async (session) => {
             const imgUrl = await connection
@@ -104,7 +110,7 @@ export const handle_wpp_events = (connection, session) => {
             await ClientModel.create({
               name: session.answers[0],
               email: session.answers[1],
-              picture: imgUrl || "",
+              ...(imgUrl && { picture: imgUrl }),
               phone: jidToPhone(jid),
               channels: ["whatsapp"],
             });
