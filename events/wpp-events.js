@@ -73,7 +73,7 @@ export const handle_wpp_events = (connection, session) => {
       const customer = jid;
       const client = await Client.findByPhone(jidToPhone(jid));
       const session = Chatbot.findSession(customer);
-      if (client && !client.answered?.answered) {
+      if (client && !client.hasAnswered?.answered) {
         if (session) {
           Chatbot.answerQuestion({ message, customer }, async (session) => {
             await FormModel.create({
@@ -83,7 +83,7 @@ export const handle_wpp_events = (connection, session) => {
               answers: session.answers,
               client: client._id,
             });
-            client.answered = {
+            client.hasAnswered = {
               answered: true,
               at: new Date(),
             };

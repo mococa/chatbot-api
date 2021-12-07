@@ -19,7 +19,7 @@ const Client = new Schema(
       required: [true, "E-mail é um campo obrigatório"],
       lowercase: true,
     },
-    answered: {
+    hasAnswered: {
       answered: Boolean,
       at: Date,
     },
