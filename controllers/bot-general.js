@@ -48,6 +48,16 @@ export class Chatbot {
         message: "Sessão não encontrada",
       };
     if (session.questionIndex || 0 <= (session.questions || []).length) {
+      const question = session.questions[session.questionIndex || 0]?.question;
+      if (question.type === "unique") {
+        return this.reply(
+          custumer,
+          `${question.question}\n${question.options
+            .map(capitalize)
+            .map((opt) => `  ●  ${opt}`)
+            .join("\n")}`
+        );
+      }
       this.reply(
         customer,
         session.questions[session.questionIndex || 0]?.question
@@ -86,7 +96,7 @@ export class Chatbot {
             "Por favor, selecione uma das opções:\n" +
               question.options
                 .map(capitalize)
-                .map((opt) => "  ● " + opt)
+                .map((opt) => `  ●  ${opt}`)
                 .join("\n")
           );
         }
