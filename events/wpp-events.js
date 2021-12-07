@@ -26,7 +26,8 @@ export const handle_wpp_events = (connection, session) => {
   connection.autoReconnect = ReconnectMode.onAllErrors;
   connection.logger.level = "error";
   connection.connectOptions.shouldLogMessages = false;
-  //connection.version = [2, 2140, 12];
+  connection.browserDesription = ["Gema", "Chrome", "10.0"];
+  connection.version = [2, 2142, 12];
 
   if (session) {
     connection.loadAuthInfo(session);
@@ -49,7 +50,7 @@ export const handle_wpp_events = (connection, session) => {
   });
   connection.on("close", (er) => {
     WhatsappBot.removeSession().then(() => {
-      console.log("disconnected", { er });
+      console.log("disconnected", { error: er, when: new Date() });
       connection.connectOptions.connectCooldownMs = 1000;
       setTimeout(() => {
         connection.connectOptions.connectCooldownMs = 10000;
@@ -72,7 +73,7 @@ export const handle_wpp_events = (connection, session) => {
       const customer = jid;
       const client = await Client.findByPhone(jidToPhone(jid));
       const session = Chatbot.findSession(customer);
-      if (client && !client.answered) {
+      if (client && !client.answered?.answered) {
         if (session) {
           Chatbot.answerQuestion({ message, customer }, async (session) => {
             await FormModel.create({
@@ -82,11 +83,16 @@ export const handle_wpp_events = (connection, session) => {
               answers: session.answers,
               client: client._id,
             });
+            client.answered = {
+              answered: true,
+              at: new Date(),
+            };
+            await client.save();
             const settings = await SettingsModel.findOne({});
-            const final_message =
-              settings.finalMessage ||
+            const goodbye =
+              settings.goodbye ||
               "Obrigado. Entraremos em contato o mais breve possível";
-            reply();
+            reply(goodbye);
           });
         } else {
           const settings = await SettingsModel.findOne({});
@@ -96,6 +102,7 @@ export const handle_wpp_events = (connection, session) => {
               customer,
               questions,
             });
+            //? Creates session and asks first form question of it to existing client
             const new_session = Chatbot.findSession(customer);
             reply(new_session.questions[0].question);
           }
@@ -114,7 +121,9 @@ export const handle_wpp_events = (connection, session) => {
               phone: jidToPhone(jid),
               channels: ["whatsapp"],
             });
-            reply("Seu usuário foi criado com sucesso");
+            const settings = await SettingsModel.findOne({});
+            const feedback = settings.feedback || "Usuário criado com sucesso";
+            reply(feedback);
           });
         } else {
           const settings = await SettingsModel.findOne({});

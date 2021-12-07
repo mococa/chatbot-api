@@ -7,7 +7,7 @@ export class Client {
       throw {
         message: "Telefone não informado",
       };
-    return await ClientModel.findOne({ phone }).lean();
+    return await ClientModel.findOne({ phone }); //.lean();
   }
   static async get(id) {
     if (id) return await ClientModel.findById(id).lean();

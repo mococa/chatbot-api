@@ -19,6 +19,10 @@ const Client = new Schema(
       required: [true, "E-mail é um campo obrigatório"],
       lowercase: true,
     },
+    answered: {
+      answered: Boolean,
+      at: Date,
+    },
     channels: {
       type: [String],
       enum: ["whatsapp", "instagram", "facebook"],
