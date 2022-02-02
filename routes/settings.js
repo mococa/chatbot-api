@@ -5,14 +5,44 @@ export const settings_route = Router();
 const route = settings_route;
 
 route.put("/save", async (req, res) => {
-  const { welcome, goodbye, feedback } = req.body;
-  if (welcome?.some((field) => !field) || !goodbye || !feedback)
+  const {
+    welcome,
+    goodbye,
+    feedback,
+    signupConfirmation,
+    formConfirmation,
+    alreadySigned,
+    cooldown,
+  } = req.body;
+
+  if (
+    welcome?.some((field) => !field) ||
+    [
+      goodbye,
+      feedback,
+      signupConfirmation,
+      formConfirmation,
+      alreadySigned,
+      cooldown,
+    ].some((field) => !field)
+  )
     return res
       .status(400)
       .json({ message: "Por favor, preencha todos os campos necessários" });
+
   await SettingsModel.updateOne(
     {},
-    { $set: { welcome, goodbye, feedback } },
+    {
+      $set: {
+        welcome,
+        goodbye,
+        feedback,
+        signupConfirmation,
+        formConfirmation,
+        alreadySigned,
+        cooldown,
+      },
+    },
     { upsert: true }
   );
   const settings = await SettingsModel.findOne({}).lean();

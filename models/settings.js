@@ -12,6 +12,22 @@ const Settings = new Schema(
         "Deve-se haver 2 perguntas de boas vindas, nesta ordem: Nome e Email",
       ],
     },
+    signupConfirmation: {
+      type: String,
+      default: "Seus dados estão certo?",
+    },
+    formConfirmation: {
+      type: String,
+      default: "Confirma?",
+    },
+    alreadySigned: {
+      type: String,
+      default: "Você já assinou um formulário recentemente",
+    },
+    cooldown: {
+      type: String,
+      default: "1",
+    },
     goodbye: String,
     feedback: String,
     askQuestions: {

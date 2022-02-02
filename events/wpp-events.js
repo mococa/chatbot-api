@@ -73,7 +73,8 @@ export const handle_wpp_events = (connection, session) => {
       const customer = jid;
       const client = await Client.findByPhone(jidToPhone(jid));
       const session = Chatbot.findSession(customer);
-      if (client && !client.hasAnswered?.answered) {
+
+      if (client) {
         if (session) {
           Chatbot.answerQuestion({ message, customer }, async (session) => {
             await FormModel.create({
@@ -96,6 +97,14 @@ export const handle_wpp_events = (connection, session) => {
           });
         } else {
           const settings = await SettingsModel.findOne({});
+          if (
+            client.hasAnswered.at &&
+            (new Date().getTime() - new Date(client.hasAnswered.at).getTime()) /
+              (1000 * 60 * 60) >=
+              Number(settings.cooldown)
+          ) {
+            return reply(settings.alreadySigned);
+          }
           if (settings.askQuestions) {
             const questions = await Question.get();
             Chatbot.createSession({
@@ -108,7 +117,6 @@ export const handle_wpp_events = (connection, session) => {
           }
         }
       } else {
-        if (client) return;
         if (session) {
           Chatbot.answerQuestion({ message, customer }, async (session) => {
             const imgUrl = await connection
