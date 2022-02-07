@@ -8,13 +8,15 @@ import { ClientModel } from "../models/client";
 import { SettingsModel } from "../models/settings";
 import { Question } from "../controllers/question";
 import { FormModel } from "../models/forms";
-import { ObjectId } from "bson";
+
 let jid = null;
+
 const test_numbers = [
-  "21982869775",
-  "21993593730",
-  "21979262249",
-  "4198712624",
+  // "21982869775",
+  // "21993593730",
+  // "21979262249",
+  // "4198712624",
+  "5521975644963@s.whatsapp.net",
 ];
 
 export const handle_wpp_events = (connection, session) => {
@@ -26,8 +28,8 @@ export const handle_wpp_events = (connection, session) => {
   connection.autoReconnect = ReconnectMode.onAllErrors;
   connection.logger.level = "error";
   connection.connectOptions.shouldLogMessages = false;
-  connection.browserDesription = ["Gema", "Chrome", "10.0"];
-  connection.version = [2, 2142, 12];
+  //connection.browserDesription = ["Gema", "Chrome", "10.0"];
+  connection.version = [2, 2202, 8];
 
   if (session) {
     connection.loadAuthInfo(session);
@@ -60,12 +62,18 @@ export const handle_wpp_events = (connection, session) => {
 
   connection.on("chat-update", async (chat_update) => {
     if (!(chat_update.messages && chat_update.count)) return;
+    console.log({
+      answering: Chatbot.answering,
+      message: chat_update.messages?.array[0]?.message?.conversation || "",
+      jid: chat_update.jid,
+    });
+    
+    if (!Chatbot.answering) return;
     try {
       await sleep(300);
-      const data = chat_update.messages?.all()[0];
-      jid = data?.key?.remoteJid;
-      const message = data?.message?.conversation;
-
+      jid = chat_update.jid;
+      const message =
+        chat_update.messages?.array[0]?.message?.conversation || "";
       if (!test_numbers.some((test_number) => jid.includes(test_number))) {
         return;
       }
@@ -77,6 +85,37 @@ export const handle_wpp_events = (connection, session) => {
       if (client) {
         if (session) {
           Chatbot.answerQuestion({ message, customer }, async (session) => {
+            const settings = await SettingsModel.findOne({});
+            if (!session.active) {
+              //Confirm everything is correct
+              if (session.confirming && !session.confirmed) {
+                if (
+                  ["sim", "s", "certo", "correto", "aham", "certinho"].includes(
+                    message.toLowerCase()
+                  )
+                ) {
+                  session.confirmed = true;
+                  Chatbot.editSession(session);
+                } else if (
+                  ["não", "nao", "n", "incorreto", "não!", "Não!"].includes(
+                    message.toLowerCase()
+                  )
+                ) {
+                  reply("Formulário cancelado");
+                  return;
+                } else {
+                  reply(
+                    "Não entendi. Por favor, digite Sim ou Não, dependendo se os dados estão corretos."
+                  );
+                  return;
+                }
+              } else {
+                reply(settings.formConfirmation);
+                session.confirming = true;
+                Chatbot.editSession(session);
+                return;
+              }
+            }
             await FormModel.create({
               questions: session.questions.map((question) =>
                 String(question.question)
@@ -89,7 +128,6 @@ export const handle_wpp_events = (connection, session) => {
               at: new Date(),
             };
             await client.save();
-            const settings = await SettingsModel.findOne({});
             const goodbye =
               settings.goodbye ||
               "Obrigado. Entraremos em contato o mais breve possível";
@@ -119,6 +157,48 @@ export const handle_wpp_events = (connection, session) => {
       } else {
         if (session) {
           Chatbot.answerQuestion({ message, customer }, async (session) => {
+            const settings = await SettingsModel.findOne({});
+            if (!session.active) {
+              // Confirm sign up
+              if (session.confirming && !session.confirmed) {
+                if (
+                  [
+                    "sim",
+                    "s",
+                    "Sim",
+                    "SIM",
+                    "certo",
+                    "correto",
+                    "Correto",
+                    "Certo",
+                    "Aham",
+                    "aham",
+                    "certinho",
+                    "Certinho",
+                  ].includes(message)
+                ) {
+                  session.confirmed = true;
+                  Chatbot.editSession(session);
+                } else if (
+                  ["não", "nao", "n", "incorreto", "não!", "Não!"].includes(
+                    message.toLowerCase()
+                  )
+                ) {
+                  reply("Inscrição cancelada");
+                  return;
+                } else {
+                  reply(
+                    "Não entendi. Por favor, digite Sim ou Não, dependendo se os dados estão corretos."
+                  );
+                  return;
+                }
+              } else {
+                reply(settings.signupConfirmation);
+                session.confirming = true;
+                Chatbot.editSession(session);
+                return;
+              }
+            }
             const imgUrl = await connection
               .getProfilePicture(jid)
               .catch(() => null);
@@ -129,7 +209,6 @@ export const handle_wpp_events = (connection, session) => {
               phone: jidToPhone(jid),
               channels: ["whatsapp"],
             });
-            const settings = await SettingsModel.findOne({});
             const feedback = settings.feedback || "Usuário criado com sucesso";
             reply(feedback);
           });

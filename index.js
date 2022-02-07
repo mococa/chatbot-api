@@ -11,6 +11,9 @@ import { handle_ig_events } from "./events/insta-events";
 import { Instagram } from "./controllers/instagram";
 import Insta from "@androz2091/insta.js";
 import { BotModel } from "./models/bot";
+import { schedules } from "./schedules";
+import { Chatbot } from "./controllers/bot-general";
+
 const app = express();
 app.use(express.json());
 
@@ -23,6 +26,7 @@ app.get("/", (req, res) => {
 app.listen(process.env.PORT || 8080, () => {
   connection().then(async () => {
     try {
+      schedules();
       console.info("WhatsApp Bot: warming up");
       //! Needs to disable DM requests!
       //* https://www.instagram.com/push/web/settings/
@@ -34,6 +38,7 @@ app.listen(process.env.PORT || 8080, () => {
     }
   });
   async function whatsAppConnection() {
+    Chatbot.setAnswering(true);
     const session = await WhatsappBot.getSession();
     const client = new WAConnection();
     handle_wpp_events(client, session);

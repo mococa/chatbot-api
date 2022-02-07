@@ -1,10 +1,15 @@
 import { MessageType } from "@adiwajshing/baileys";
+import { v4 } from "uuid";
 import { capitalize } from "../helpers";
 import { WhatsappBot } from "./whatsapp";
 
 export class Chatbot {
   sessions = [];
+  answering = true;
 
+  static setAnswering(activated) {
+    this.answering = activated;
+  }
   static findSession(customer) {
     if (!this.sessions) this.sessions = [];
     return this.sessions.find(
@@ -28,11 +33,20 @@ export class Chatbot {
     //};
     //}
   }
+  static editSession(session) {
+    if (!this.sessions) this.sessions = [];
+    const { confirmed, confirming, id } = session;
+    const editingSession = this.sessions.find((s) => s.id === id);
+    editingSession.confirmed = confirmed;
+    editingSession.confirming = confirming;
+    editingSession.confirmed = confirmed;
+  }
   static createSession({ customer, questions = [] }) {
     if (!this.sessions) this.sessions = [];
     this.sessions = [
       ...this.sessions.filter((session) => session.customer !== customer),
       {
+        id: v4(),
         customer,
         questions,
         active: true,
@@ -74,6 +88,7 @@ export class Chatbot {
       throw {
         message: "Sessão não encontrada",
       };
+    if (!session.active) return callback(session);
     const question = this.getQuestion({ session });
     let pattern;
     switch (question.type) {
@@ -126,9 +141,8 @@ export class Chatbot {
     const nextQuestion = this.getQuestion({ session });
     if (nextQuestion) return this.askQuestion({ customer });
 
-    callback(session);
     session.active = false;
-
+    callback(session);
   }
   static clear() {
     this.sessions = [];
